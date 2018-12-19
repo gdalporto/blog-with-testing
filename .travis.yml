@@ -6,6 +6,6 @@ deploy:
   provider: heroku
   api_key:
     secure: myadqcM8yQ82SjOFQZoYxilo4+jt6eNDfusqSYPqGKItCFNoUWqHcxuwGKB2JoXM4G4oSQqTH9R8llY+ptdaf9/xPKxJZbtVcQL4yWhsTwXD3aTDnDaY5oEE2PqYBkIcgNXvV75QuQ6nVT2SDTLUqmL0qyDq1sKWn8x1JofundgCyiVMry55gpt5D8jffBHsptdiQ94L+Wk28V5IW3GwriXIbx+YhsBXfYbu8WV6QThqd36rCOnOgnbRPNdUSQPSGFOEqFm6JwrcjokPMkeXHOmNksn2MnHJojihuJ6/TYNuG7S6c9Fu8zq4E5SF4tUKQ8qSthMRZMZDoozeL4yn+xxumBiEqHwqY6CNMjhKOibQQyCr+VBLAtD50OBGxrGwPMGtSVBKo7GE37qOMfvoj8gzIZ9urokGw1f3iILsNJx74UuqotUvbs2nD7GkbF17u9EDOM/L6s1LRvG3WnJRa69uzpQGtkkoMyukO2/hlSLXmXgXuLbRxUD3uOEOJ4guZGkiR/dBsNh7GKUKZ555yyHUzMRRapQ/owFS98v67lnktrHH3/LBndk0eX6sQuhHGcScH4OIGJGoM/qSiqNXDL/twssJL6B6RVSsyPj4fVFTiIWkbA29fcsvybs6Z+DqBytW+vHKYKqOo8Flkm8yogsVHXm3vGl7pqvabFVipQ4=
-  app: blog-with-testing
+  app: https://arcane-ocean-86510.herokuapp.com/
   on:
     repo: gdalporto/blog-with-testing
