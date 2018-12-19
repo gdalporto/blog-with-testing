@@ -9,6 +9,6 @@ deploy:
   app: https://arcane-ocean-86510.herokuapp.com/
   on:
     repo: gdalporto/blog-with-testing
+    branch: master
 
 
-    
