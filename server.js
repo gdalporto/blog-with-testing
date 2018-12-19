@@ -26,7 +26,7 @@ app.get('/posts', (req, res) => {
       res.status(500).json({ error: 'something went terribly wrong' });
     });
 });
-
+//comment
 app.get('/posts/:id', (req, res) => {
   BlogPost
     .findById(req.params.id)
