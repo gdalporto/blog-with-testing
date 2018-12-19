@@ -27,6 +27,7 @@ app.get('/posts', (req, res) => {
     });
 });
 //comment
+//comment
 app.get('/posts/:id', (req, res) => {
   BlogPost
     .findById(req.params.id)
