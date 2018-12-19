@@ -3,6 +3,7 @@
 const mocha = require('mocha');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+
 const mongoose = require('mongoose');
 const faker = require('faker');
 
@@ -17,6 +18,7 @@ console.log(TEST_DATABASE_URL);
 
 chai.use(chaiHttp);
 
+
 //-----------CREATE TEST DATA----------------
 
 function seedBlogData(){
@@ -26,19 +28,21 @@ function seedBlogData(){
   for (let i=1; i<=10; i++) {
     seedData.push(generateBlogData());
   };
-  return BlogPost.insertMany(seedData);
+//  console.log(seedData);
+  return BlogPost
+    .insertMany(seedData);
 };
 
 
 
 function generateBlogData(){
   return {
-    Title: faker.lorem.sentence(),
-    Author: {
+    title: faker.lorem.sentence(),
+    author: {
       firstName: faker.name.firstName(),
       lastName: faker.name.lastName()
     },
-    Content: faker.lorem.paragraph()
+    content: faker.lorem.paragraph()
 //    Comments: {
 //      comment: faker.lorem.sentence,
 //      comment: faker.lorem.sentence
@@ -64,40 +68,46 @@ function tearDownDb(){
 //------------TESTING AREA-------------------
 
 
-describe('BlogPost API resource', function() {
+describe('GLOBAL DESCRIBE: BlogPost API tests', function() {
 
   before(function() {
-    console.log(TEST_DATABASE_URL);
+    console.log("Starting server");
     return runServer(TEST_DATABASE_URL);
   });
 
   beforeEach(function() {
-    return seedBlogData();
+    console.log("beforeEach seed data call");
+    return seedBlogData()
+      .then(()=>{
+        console.log("Success:returned Seed Blog Data");
+      })
   });
 
   afterEach(function() {
+    console.log("afterEach tearn down call");
     return tearDownDb();
   });
 
   after(function() {
+    console.log("after closeserver call");
     return closeServer();
   });
 
-  describe('GET endpoint', function() {
+  describe('first nested describe: GET endpoint', function() {
 
     it('should return all of the blog posts', function() {
       let res;
-
+      console.log("starting first GET check");
       return chai.request(app)
-        .get('/blog-posts')
+        .get('/posts')
         .then(function(_res){
-            res = _res;
+          res = _res;
             expect(res).to.have.status(200);
-            expect(res).to.have.lengthOf.at.least(1);
+            expect(res.body).to.have.lengthOf.at.least(1);
             return BlogPost.count();
         })
         .then(function(count) {
-            expect(res.body.blogpost).to.have.lengthOf(count);
+            expect(res.body).to.have.lengthOf(count);
         });
     });
 
@@ -105,26 +115,27 @@ describe('BlogPost API resource', function() {
 
       let resBlog;
       return chai.request(app)
-        .get('/blog-posts')
+        .get('/posts')
         .then(function(res){
             expect(res).to.have.status(200);
             expect(res).to.be.json;
-            expect(res.body.blogposts).to.be.a('array');
-            expect(res.body.BlogPosts).to.have.lengthOf.at.least(1);
+            expect(res.body).to.be.a('array');
+            expect(res.body).to.have.lengthOf.at.least(1);
 
-            res.body.blogposts.forEach(function(blogpost){
+            res.body.forEach(function(blogpost){
               expect(blogpost).to.be.a('object');
               expect(blogpost).to.include.keys(
                 "id", "author", "title", "content");
             });
-            resBlog = res.body.blogposts[0];
+            resBlog = res.body[0];
             return BlogPost.findById(resBlog.id);
         })
         .then(function(blogpost){
+          console.log("resBlog is:", resBlog, "blogpost is", blogpost);
           expect(resBlog.id).to.equal(blogpost.id);
           expect(resBlog.name).to.equal(blogpost.name);
           expect(resBlog.title).to.equal(blogpost.title);
-          expect(resBlog.author).to.equal(blogpost.author);
+          expect(resBlog.author).to.equal(blogpost.author.firstName + " " + blogpost.author.lastName);
         });
     });
 
@@ -133,31 +144,28 @@ describe('BlogPost API resource', function() {
   describe('POST endpoint', function(){
 
     it('should add a new blog post', function(){
-      const newPost = generateBlogPost();
-      let mostRecentComment;
+      const newPost = generateBlogData();
 
       return chai.request(app)
-        .post('blog-posts')
+        .post('/posts')
         .send(newPost)
         .then(function(res){
           expect(res).to.have.status(201);
           expect(res).to.be.json;
-          expect(res.body).to.bea('object');
+          expect(res.body).to.be.a('object');
           expect(res.body).to.include.keys(
             'title', 'content', 'author', 'created'
           );
-          expect(res.body.title).to.equal(newPost.name);
+          expect(res.body.title).to.equal(newPost.title);
           expect(res.body.content).to.equal(newPost.content);
-          expect(res.body.author).to.equal(newPost.author);
-          expect(res.body.created).to.equal(newPost.created);
-
+          expect(res.body.author).to.equal(newPost.author.firstName +" "+newPost.author.lastName);
           return BlogPost.findById(res.body.id);
         })
         .then(function(blog){
-          expect(blog.title).to.equal(newBlog.title);
-          expect(blog.content).to.equal(newBlog.content);
-          expect(blog.author).to.equal(newBlog.author);
-          expect(blog.created).to.equal(newBlog.created);
+          console.log("BLOG is:", blog, "NEWPOST is:", newPost);
+          expect(blog.title).to.equal(newPost.title);
+          expect(blog.content).to.equal(newPost.content);
+          expect(blog.author.firstName + " " + blog.author.lastName).to.equal(newPost.author.firstName +" "+newPost.author.lastName);
         });
     });
   });
@@ -174,13 +182,13 @@ describe('BlogPost API resource', function() {
           updateData.id = blogpost.id;
 
           return chai.request(app)
-            .put(`/blogposts/${blogpost.id}`)
+            .put(`/posts/${blogpost.id}`)
             .send(updateData);
         })
         .then(function(res) {
           expect(res).to.have.status(204);
 
-          return blogpost.findById(updateData.id);
+          return BlogPost.findById(updateData.id);
         })
         .then(function(blogpost) {
           expect(blogpost.title).to.equal(updateData.title);
@@ -193,11 +201,11 @@ describe('BlogPost API resource', function() {
     it('should delete a blog post by id', function() {
       let post;
 
-      return Restaurant
+      return BlogPost
         .findOne()
         .then(function(_post) {
           post = _post;
-          return chai.request(app).delete(`/blogposts/${post.id}`);
+          return chai.request(app).delete(`/posts/${post.id}`);
         })
         .then(function(res) {
           expect(res).to.have.status(204);
@@ -208,10 +216,6 @@ describe('BlogPost API resource', function() {
         });
     });
   });
-
-
-
-
 
 });
 
